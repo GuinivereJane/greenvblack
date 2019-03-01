@@ -5,16 +5,24 @@
         <div class="green">
           GREEN SCORE {{ greenScoreByScore }}</br>
           GREEN POINTS {{ greenScoreByPoints }}
+          <ul v-for="(item, key) in greenAtheletes" :key=key>
+            <li  > {{ item.competitorName }} </li>
+          </ul>
         </div>
       </v-flex>
       <v-flex class="size"  xs6>
         <div class="black">
-           BLACK SCORE {{ blackScoreByScore }}<br>
-           BLACK POINTS {{ blackScoreByPoints }}
+          BLACK SCORE {{ blackScoreByScore }}<br>
+          BLACK POINTS {{ blackScoreByPoints }}
+
+          <ul v-for="(item, key) in blackAtheletes" :key=key>
+            <li  > {{ item.competitorName }} </li>
+          </ul>
+
         </div>
       </v-flex>
       <v-flex xs2></v-flex>
-      <v-flex align-content-center xs8>
+      <v-flex align-content-center xs12>
         <div>
         <img src="~assets/images/download.jpeg" alt="Smiley face">
         </div>
@@ -24,6 +32,10 @@
   </v-container>
 </template>
 <style>
+ul {
+  list-style-type: none;
+}
+
 img {
   width: 100%;
 }
@@ -64,12 +76,19 @@ export default {
 
   computed: {
       atheletes () {
-        console.log(teamBlack.length + teamGreen.length);
         let mens = this.divisionMap(this.mens.leaderboardRows);
         let womens = this.divisionMap(this.womens.leaderboardRows);
         let mensover5559 = this.divisionMap(this.mensover5559.leaderboardRows);
         let womensunder1415 = this.divisionMap(this.womensunder1415.leaderboardRows);
         return this.addPoints(womens.concat(mens).concat(mensover5559).concat(womensunder1415));
+      },
+      greenAtheletes(){
+        return teamGreen.map(val => _.find(this.atheletes, athelete => athelete.competitorId == val)
+        );
+      },
+      blackAtheletes(){
+        return teamBlack.map(val => _.find(this.atheletes, athelete => athelete.competitorId == val)
+        );
       },
       blackScoreByScore(){
         return teamBlack.reduce((accum, val, key)=>{
