@@ -1,7 +1,21 @@
 <template>
-  <v-container class="text"  grid-list-md text-xs-center>
+  <v-container   grid-list-md text-xs-center>
     <v-layout row wrap>
-      <v-flex class="size" xs6>
+      <v-flex class="headline green whitetext" xs12>
+        {{
+          blackScoreByPoints > greenScoreByPoints ?
+          'GREEN' : 'BLACK'
+        }}
+        Team is has the lead with a {{
+          blackScoreByPoints < greenScoreByPoints ?
+          greenScoreByPoints-blackScoreByPoints :
+          blackScoreByPoints-greenScoreByPoints
+        }} point difference </BR>
+      </v-flex>
+        <v-flex class="black whitetext" xs12>
+          (note: the higher your placing on the FCCF leaderboard the lower your points)
+        </v-flex>
+      <v-flex  class="size whitetext" xs6>
         <div class="green">
           GREEN SCORE {{ greenScoreByScore }}</br>
           GREEN POINTS {{ greenScoreByPoints }}
@@ -10,7 +24,7 @@
           </ul>
         </div>
       </v-flex>
-      <v-flex class="size"  xs6>
+      <v-flex class="size whitetext"  xs6>
         <div class="black">
           BLACK SCORE {{ blackScoreByScore }}<br>
           BLACK POINTS {{ blackScoreByPoints }}
@@ -32,6 +46,9 @@
   </v-container>
 </template>
 <style>
+.blacktext {
+  color: black;
+}
 ul {
   list-style-type: none;
 }
@@ -40,9 +57,9 @@ img {
   width: 100%;
 }
 .size {
-  height:50rem;
+  height:40rem;
 }
-.text {
+.whitetext {
   color:white;
 }
 div{
@@ -59,8 +76,8 @@ div{
 const _ = require('lodash');
 
 
-const teamBlack = [1668782, 1654875, 1518645, 1626216, 1668672, 708073, 946872, 708022, 1575134, 1700999, 952877, 1253849, 1275746, 371298, 347291, 1693243]
-const teamGreen = [ 1202565, 1397696,417420, 973378, 397804, 708103, 773883, 706490, 1262251, 1304578, 1276204, 1632490, 1550233, 687298, 1654168, 1355793, 1677273 ];
+const teamBlack = [1034054, 1668782, 1654875, 1518645, 1626216, 1668672, 708073, 946872, 708022, 1575134, 1700999, 952877, 1253849, 1275746, 371298, 347291, 1693243]
+const teamGreen = [ 1697631,1595926,1202565, 1397696,417420, 973378, 397804, 708103, 773883, 706490, 1262251, 1304578, 1276204, 1632490, 1550233, 687298, 1654168, 1355793, 1677273 ];
 export default {
   async asyncData({ $axios }) {
     const mens = await $axios.$get('https://games.crossfit.com/competitions/api/v1/competitions/open/2019/leaderboards?affiliate=13624&division=1&scaled=0&page=1')
@@ -98,26 +115,23 @@ export default {
         //return test;
       },
       blackScoreByPoints () {
-        let test = teamBlack.reduce((accum, val, key)=>{
+        return parseInt(teamBlack.reduce((accum, val, key)=>{
           console.log(accum+"+"+ parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).points,10));
           accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).points,10);
           return accum
-        }, 0);
-        return test;
+        }, 0), 10);
       },
       greenScoreByScore(){
-        let test = teamGreen.reduce((accum, val, key)=>{
+        return parseInt(teamGreen.reduce((accum, val, key)=>{
           accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).totalScore,10);
           return accum
-        }, 0);
-        return test;
+        }, 0));
       },
       greenScoreByPoints(){
-        let test = teamGreen.reduce((accum, val, key)=>{
+        return parseInt(teamGreen.reduce((accum, val, key)=>{
           accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).points,10);
           return accum
-        }, 0);
-        return test;
+        }, 0));
       },
     },
 
