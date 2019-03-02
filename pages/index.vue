@@ -17,7 +17,6 @@
         </v-flex>
       <v-flex  class="size whitetext" xs6>
         <div class="green">
-          GREEN SCORE {{ greenScoreByScore }}</br>
           GREEN POINTS {{ greenScoreByPoints }}
           <ul v-for="(item, key) in greenAtheletes" :key=key>
             <li  > {{ item.competitorName }} </li>
@@ -26,7 +25,6 @@
       </v-flex>
       <v-flex class="size whitetext"  xs6>
         <div class="black">
-          BLACK SCORE {{ blackScoreByScore }}<br>
           BLACK POINTS {{ blackScoreByPoints }}
 
           <ul v-for="(item, key) in blackAtheletes" :key=key>
