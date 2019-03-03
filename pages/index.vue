@@ -10,7 +10,7 @@
           blackScoreByPoints < greenScoreByPoints ?
           greenScoreByPoints-blackScoreByPoints :
           blackScoreByPoints-greenScoreByPoints
-        }} point difference </BR>
+        }} point difference <BR></BR>
       </v-flex>
         <v-flex class="black whitetext" xs12>
           (note: the higher your placing on the FCCF leaderboard the lower your points)
@@ -18,17 +18,18 @@
       <v-flex  class="size whitetext" xs6>
         <div class="green">
           GREEN POINTS {{ greenScoreByPoints }}
+          </br>({{ greenCompleted}}/{{greenAtheletes.length * parseInt(week, 10)}} workouts completed and confirmed)
           <ul v-for="(item, key) in greenAtheletes" :key=key>
-            <li  > {{ item.competitorName }} </li>
+            <li  > {{ item.competitorName }} ({{item.completed}}/{{week}}) </li>
           </ul>
         </div>
       </v-flex>
       <v-flex class="size whitetext"  xs6>
         <div class="black">
           BLACK POINTS {{ blackScoreByPoints }}
-
+          </br>({{ blackCompleted}}/{{blackAtheletes.length * parseInt(week, 10)}} workouts completed and confirmed)
           <ul v-for="(item, key) in blackAtheletes" :key=key>
-            <li  > {{ item.competitorName }} </li>
+            <li  > {{ item.competitorName }} ({{item.completed}}/{{week}}) </li>
           </ul>
 
         </div>
@@ -97,6 +98,9 @@ export default {
         let womensunder1415 = this.divisionMap(this.womensunder1415.leaderboardRows);
         return this.addPoints(womens.concat(mens).concat(mensover5559).concat(womensunder1415));
       },
+      week(){
+        return this.mens.leaderboardRows[0].scores.length;
+      },
       greenAtheletes(){
         return teamGreen.map(val => _.find(this.atheletes, athelete => athelete.competitorId == val)
         );
@@ -114,7 +118,6 @@ export default {
       },
       blackScoreByPoints () {
         return parseInt(teamBlack.reduce((accum, val, key)=>{
-          console.log(accum+"+"+ parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).points,10));
           accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).points,10);
           return accum
         }, 0), 10);
@@ -131,6 +134,18 @@ export default {
           return accum
         }, 0));
       },
+      greenCompleted(){
+         return parseInt(teamGreen.reduce((accum, val, key)=>{
+          accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).completed);
+          return accum
+        }, 0));
+      },
+       blackCompleted(){
+         return parseInt(teamBlack.reduce((accum, val, key)=>{
+          accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).completed);
+          return accum
+        }, 0));
+      }
     },
 
     methods: {
@@ -149,7 +164,8 @@ export default {
             accum += parseInt(score.score)
             return accum;
           }, 0);
-          return { ...athelete, totalScore:score };
+          let completed = athelete.scores.filter(score => score.score !== '0').length;
+          return { ...athelete, totalScore:score, completed:completed };
         });
       },
       sortAtheltesByScore(atheletes){
