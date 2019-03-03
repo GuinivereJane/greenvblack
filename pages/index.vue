@@ -56,7 +56,7 @@ img {
   width: 100%;
 }
 .size {
-  height:40rem;
+  height:50rem;
 }
 .whitetext {
   color:white;
