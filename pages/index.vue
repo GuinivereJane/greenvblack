@@ -6,7 +6,7 @@
           blackScoreByPoints > greenScoreByPoints ?
           'GREEN' : 'BLACK'
         }}
-        Team is has the lead with a {{
+        Team has the lead with a {{
           blackScoreByPoints < greenScoreByPoints ?
           greenScoreByPoints-blackScoreByPoints :
           blackScoreByPoints-greenScoreByPoints
@@ -74,7 +74,7 @@ div{
 const _ = require('lodash');
 
 
-const teamBlack = [1034054, 1668782, 1654875, 1518645, 1626216, 1668672, 708073, 946872, 708022, 1575134, 1700999, 952877, 1253849, 1275746, 371298, 347291, 1693243]
+const teamBlack = [ 1063056,936605, 1034054, 1668782, 1654875, 1518645, 1626216, 1668672, 708073, 946872, 708022, 1575134, 1700999, 952877, 1253849, 1275746, 371298, 347291, 1693243]
 const teamGreen = [ 1697631,1595926,1202565, 1397696,417420, 973378, 397804, 708103, 773883, 706490, 1262251, 1304578, 1276204, 1632490, 1550233, 687298, 1654168, 1355793, 1677273 ];
 export default {
   async asyncData({ $axios }) {
