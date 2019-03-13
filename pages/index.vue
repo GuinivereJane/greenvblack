@@ -3,21 +3,47 @@
     <v-layout row wrap>
       <v-flex class="headline green whitetext" xs12>
         {{
-          blackScoreByPoints > greenScoreByPoints ?
+          overallScoresWeighted[0] > overallScoresWeighted[1] ?
           'GREEN' : 'BLACK'
         }}
         Team has the lead with a {{
-          blackScoreByPoints < greenScoreByPoints ?
-          greenScoreByPoints-blackScoreByPoints :
-          blackScoreByPoints-greenScoreByPoints
+          overallScoresWeighted[0] < overallScoresWeighted[1] ?
+          overallScoresWeighted[1]-overallScoresWeighted[0] :
+          overallScoresWeighted[0]-overallScoresWeighted[1]
         }} point difference <BR></BR>
       </v-flex>
-        <v-flex class="black whitetext" xs12>
+
+
+         <v-flex xs12>
+        <div class="resultContainer">
+          <v-layout class="black" align-center justify-space-around row fill-height>
+             <div class=" black whitetext" v-for="(scores, key) in perRoundWeighted" :key=key+scores >
+              <div>ROUND #{{ key + 1}}</div>
+              <div>
+                {{scores[0] > scores[1] ?'GREEN' : 'BLACK'}}
+                BY
+                {{
+                  scores[0] < scores[1] ?
+                  scores[1]-scores[0] :
+                  scores[0]-scores[1]
+                }}
+
+
+              </div>
+        </div>
+          </v-layout>
+        </div>
+        </v-flex>
+
+
+
+
+        <v-flex class="green whitetext" xs12>
           (note: the higher your placing on the FCCF leaderboard the lower your points)
         </v-flex>
       <v-flex  class="size whitetext" xs6>
         <div class="green">
-          GREEN POINTS {{ greenScoreByPoints }}
+          GREEN POINTS {{ overallScoresWeighted[1] }}
           </br>({{ greenCompleted}}/{{greenAtheletes.length * parseInt(week, 10)}} workouts completed and confirmed)
           <ul v-for="(item, key) in greenAtheletes" :key=key>
             <li  > {{ item.competitorName }} ({{item.completed}}/{{week}}) </li>
@@ -26,11 +52,14 @@
       </v-flex>
       <v-flex class="size whitetext"  xs6>
         <div class="black">
-          BLACK POINTS {{ blackScoreByPoints }}
+          BLACK POINTS {{ overallScoresWeighted[0] }}
           </br>({{ blackCompleted}}/{{blackAtheletes.length * parseInt(week, 10)}} workouts completed and confirmed)
           <ul v-for="(item, key) in blackAtheletes" :key=key>
             <li  > {{ item.competitorName }} ({{item.completed}}/{{week}}) </li>
           </ul>
+
+
+
 
         </div>
       </v-flex>
@@ -63,6 +92,9 @@ img {
 }
 div{
   height: 100%;
+}
+ul{
+  padding-left:0px;
 }
   .green {
     background-color: green;
@@ -109,16 +141,43 @@ export default {
         return teamBlack.map(val => _.find(this.atheletes, athelete => athelete.competitorId == val)
         );
       },
-      perRound(){
+      nullsPerRound(){
+         const greenNulls = this.countNull(teamGreen);
+         const blackNulls = this.countNull(teamBlack);
+         return { greenNulls, blackNulls };
+
+
           //pointsPerRound[] has been added to each athelete, athelete gets null if the did not complete
           //need to count the number of nulls in each group
           //sort each group
           //remove the nulls,
           //the remove  highest(worst)scoring atheletes from the team with the most competitors until the largest team is the same size as the smallest team
           //return and object {blackScores:[r1,r2,r3...], greenScores[r1,r2,r3...]}
-        retunrn []
 
       },
+      perRoundWeighted(){
+        //returns [back score, green score ]
+        let scores = [];
+        for (let round = 0; round < this.week; round++){
+          let sorted = this.sortAtheltesByScoreByRound(this.atheletes, round);
+          let teamBlackRound = sorted.filter(athelete => teamBlack.includes(parseInt(athelete.competitorId)));
+          let teamGreenRound = sorted.filter(athelete => teamGreen.includes(parseInt(athelete.competitorId)));
+          scores.push([ Math.round(this.wieghtedScoresByRound(round, teamBlackRound)), Math.round(this.wieghtedScoresByRound(round, teamGreenRound)) ]);
+        }
+        return scores;
+      },
+
+
+      overallScoresWeighted(){
+        let scores = this.perRoundWeighted.reduce((accum, val, key) =>{
+          accum[0] += val[0];
+          accum[1] += val[1];
+          return accum;
+        }, [0,0]);
+        scores = [ scores[0]/this.week, scores[1]/this.week]
+        return scores;
+      },
+
       blackScoreByScore(){
         return teamBlack.reduce((accum, val, key)=>{
           accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).totalScore,10);
@@ -159,6 +218,51 @@ export default {
     },
 
     methods: {
+
+       scoreByRound(round, trimedTeam){
+        return trimedTeam.reduce((accum, athelete, key)=>{
+          if (athelete.pointsPerRound[round] !== null){
+            accum += athelete.pointsPerRound[round];
+          }
+          return accum
+        }, 0);
+      },
+
+
+      wieghtedScoresByRound(round, team){
+        let score = this.scoreByRound(round, team)
+        let trimedLength = team.filter(athelete => athelete.pointsPerRound[round] !== null).length;
+        let average = score / trimedLength;
+
+        team.forEach(athelete => {
+          if (athelete.pointsPerRound[round] === null){
+            let total = athelete.pointsPerRound.reduce((accum, val, key) =>{
+              if (val !== null){
+                accum += val;
+              }
+              return accum;
+            },0);
+            let weightedScore = (total + average) / athelete.pointsPerRound.length;
+            score += weightedScore;
+          }
+        });
+        return score;
+      },
+      countNull(team){
+        let nulls = [];
+          for (let round = 0; round < this.week; round++){
+            let count = 0;
+            count = team.reduce((accum, val, key) => {
+              let score = _.find(this.atheletes, athelete => athelete.competitorId == val).pointsPerRound[round];
+              if ( score === null){
+                accum++;
+              }
+              return accum;
+            }, 0);
+            nulls.push(count);
+          }
+          return nulls
+      },
       divisionMap(data) {
         if (data) {
         return data.map(athlete => {
@@ -259,7 +363,7 @@ export default {
           totals = this.sortAtheltesByScoreByRound(totals,x);
           totals = this.calculatePointsByRound(totals,x);
         }
-        totals.forEach(item => console.log(item.competitorName+"----"+item.pointsPerRound+"----"+item.points ));
+     //   totals.forEach(item => console.log(item.competitorName+"----"+item.pointsPerRound+"----"+item.points ));
 
 
         return totals;
