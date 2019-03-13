@@ -109,6 +109,16 @@ export default {
         return teamBlack.map(val => _.find(this.atheletes, athelete => athelete.competitorId == val)
         );
       },
+      perRound(){
+          //pointsPerRound[] has been added to each athelete, athelete gets null if the did not complete
+          //need to count the number of nulls in each group
+          //sort each group
+          //remove the nulls,
+          //the remove  highest(worst)scoring atheletes from the team with the most competitors until the largest team is the same size as the smallest team
+          //return and object {blackScores:[r1,r2,r3...], greenScores[r1,r2,r3...]}
+        retunrn []
+
+      },
       blackScoreByScore(){
         return teamBlack.reduce((accum, val, key)=>{
           accum += parseInt(_.find(this.atheletes, athelete => athelete.competitorId == val).totalScore,10);
@@ -158,6 +168,7 @@ export default {
           return []
         }
       },
+
       addTotalScore(atheletes){
        return atheletes.map(athelete =>{
           let score = athelete.scores.reduce((accum, score, key) => {
@@ -179,7 +190,47 @@ export default {
           return 0;
         });
       },
+      sortAtheltesByScoreByRound(atheletes, round){
+        return atheletes.sort((a,b) => {
+          if ( parseInt(a.scores[round].score) < parseInt(b.scores[round].score)){
+            return 1;
+          }
+          if ( parseInt(a.scores[round].score) > parseInt(b.scores[round].score)){
+            return -1;
+          }
+          return 0;
+        });
+      },
+      calculatePointsByRound(totals, round){
+        //send in a sorted list of atheletes and the round number
+        var points = 2;
+        let numTie = 0;
+        for(let x=0; x < totals.length; x++){
+          if (totals[x].scores[round].score === "0"){
+            typeof(totals[x].pointsPerRound) !== 'undefined' ? totals[x].pointsPerRound[round] = null : totals[x].pointsPerRound = [ null ]
+          }else {
+            if(totals[x] && totals[x+1]){
+              if (totals[x].scores[round].score === totals[x+1].scores[round].score){
+                numTie++;
+                typeof(totals[x].pointsPerRound) !== 'undefined' ? totals[x].pointsPerRound[round] = points : totals[x].pointsPerRound = [ points ]
+              } else {
+                typeof(totals[x].pointsPerRound) !== 'undefined' ? totals[x].pointsPerRound[round] = points : totals[x].pointsPerRound = [ points ]
+                points = points+numTie;
+                numTie = 0;
+                points++;
+              }
+            } else {
+              typeof(totals[x].pointsPerRound) !== 'undefined' ? totals[x].pointsPerRound[round] = points : totals[x].pointsPerRound = [ points ]
+            }
+          }
+        }
+        return totals;
+      },
+
+
       calculatePoints(totals){
+
+
         var points = 2;
         let numTie = 0;
         for(let x=0; x < totals.length; x++){
@@ -203,6 +254,13 @@ export default {
         let totals = this.addTotalScore(atheletes);
         totals = this.sortAtheltesByScore(totals);
         totals = this.calculatePoints(totals);
+
+        for(let x =0; x< totals[0].scores.length; x++){
+          totals = this.sortAtheltesByScoreByRound(totals,x);
+          totals = this.calculatePointsByRound(totals,x);
+        }
+        totals.forEach(item => console.log(item.competitorName+"----"+item.pointsPerRound+"----"+item.points ));
+
 
         return totals;
       },
