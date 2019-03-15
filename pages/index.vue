@@ -1,6 +1,7 @@
 <template>
   <v-container   grid-list-md text-xs-center>
     <v-layout row wrap>
+      {{ overallScoresWeighted }}
       <v-flex class="headline green whitetext" xs12>
         {{
           overallScoresWeighted[0] > overallScoresWeighted[1] ?
@@ -172,16 +173,16 @@ export default {
 
       overallScoresWeighted(){
         let scores = this.perRoundWeighted.reduce((accum, val, key) =>{
-          if (Number.isNaN(val[0])){
+          if (!Number.isNaN(val[0])){
             accum[0] += val[0];
-
           }
-          if (Number.isNaN(val[0])){
+          if (!Number.isNaN(val[0])){
             accum[1] += val[1];
           }
-          return accum;
+           return accum;
         }, [0,0]);
-        scores = [ scores[0]/this.week, scores[1]/this.week]
+        scores = [ Math.round(scores[0]/this.week), Math.round(scores[1]/this.week) ];
+
         return scores;
       },
 
@@ -244,7 +245,6 @@ export default {
           trimedLength = team.length;
         }
         let average = score / trimedLength;
-        console.log(trimedLength);
         team.forEach(athelete => {
           if (athelete.pointsPerRound[round] === null){
             let total = athelete.pointsPerRound.reduce((accum, val, key) =>{
