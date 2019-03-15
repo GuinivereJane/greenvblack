@@ -38,6 +38,8 @@
 
 
 
+
+
         <v-flex class="green whitetext" xs12>
           (note: the higher your placing on the FCCF leaderboard the lower your points)
         </v-flex>
@@ -170,8 +172,13 @@ export default {
 
       overallScoresWeighted(){
         let scores = this.perRoundWeighted.reduce((accum, val, key) =>{
-          accum[0] += val[0];
-          accum[1] += val[1];
+          if (Number.isNaN(val[0])){
+            accum[0] += val[0];
+
+          }
+          if (Number.isNaN(val[0])){
+            accum[1] += val[1];
+          }
           return accum;
         }, [0,0]);
         scores = [ scores[0]/this.week, scores[1]/this.week]
@@ -231,9 +238,13 @@ export default {
 
       wieghtedScoresByRound(round, team){
         let score = this.scoreByRound(round, team)
-        let trimedLength = team.filter(athelete => athelete.pointsPerRound[round] !== null).length;
-        let average = score / trimedLength;
 
+        let trimedLength = team.filter(athelete => athelete.pointsPerRound[round] !== null).length;
+        if (trimedLength === 0){
+          trimedLength = team.length;
+        }
+        let average = score / trimedLength;
+        console.log(trimedLength);
         team.forEach(athelete => {
           if (athelete.pointsPerRound[round] === null){
             let total = athelete.pointsPerRound.reduce((accum, val, key) =>{
